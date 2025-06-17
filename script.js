@@ -1,17 +1,16 @@
 // **CRITICAL SECURITY WARNING:**
-// DO NOT EXPOSE YOUR API KEY IN CLIENT-SIDE JAVASCRIPT IN A PRODUCTION ENVIRONMENT.
+// DO NOT DEPLOY THIS CODE TO A PUBLIC WEBSITE WITH THE API KEY EXPOSED.
 // THIS IS FOR LOCAL, EXPERIMENTAL TESTING ONLY.
-// FOR SECURE DEPLOYMENT, USE A BACKEND SERVER TO CALL THE GEMINI API.
+// FOR SECURE DEPLOYMENT, YOU MUST USE A BACKEND SERVER TO CALL THE GEMINI API.
 
-// Import the GoogleGenerativeAI library (requires your HTML <script> tag to be type="module"
-// or for you to use a module bundler like Webpack/Parcel).
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"; 
-// ^^^ This line uses a CDN for simplicity. If you installed via npm, use:
-// import { GoogleGenerativeAI } from '@google/generative-ai';
+// Import the GoogleGenerativeAI library from a CDN
+// This requires your <script> tag in index.html to be type="module"
+import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-
-// Replace with your actual API key
+// === REPLACE THIS WITH YOUR ACTUAL GEMINI API KEY ===
+// This is the insecure part. For production, manage this key on a backend.
 const API_KEY = "AIzaSyBUHFr6rqFvPN6oqN25a_vfIXuORlDqnME"; 
+// ====================================================
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
@@ -57,45 +56,144 @@ document.addEventListener('DOMContentLoaded', () => {
         planOutput.classList.add('hidden');
         errorDiv.classList.add('hidden');
         loadingDiv.classList.remove('hidden');
-        trainingPlanDiv.textContent = ''; // Clear previous plan
+        trainingPlanDiv.innerHTML = ''; // Clear previous plan and use innerHTML
 
         try {
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Using gemini-1.5-flash for speed
 
-            // Construct the prompt using the gathered parameters
+            // Construct the prompt using the gathered parameters and context
             const prompt = `
-            Create a 12-week running plan.
-            Running Goal: ${parameters.goal}
-            Current Weekly Mileage: ${parameters.currentMileage} km
-            Running Days: ${parameters.runningDays}
-            Peak Weekly Mileage during plan: ${parameters.peakMileage || 'not specified'} km
-            Desired Workout Types: ${parameters.workoutTypes || 'interval training, easy runs, long runs, tempo runs'}
-            Current Easy Pace: ${parameters.easyPace} min/km
-            Target Race Pace for 32k: ${parameters.targetPace} min/km
+            You are an Jack Daniels, expert running coach. Create a 12-week running plan.
+            Today's Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            Current City: Chennai, Tamil Nadu, India (consider potential heat/humidity)
 
-            **Important Pace Clarification for the AI:**
-            - Easy/Long Run Pace should be conversational and slower than the provided easy pace, around ${parseFloat(parameters.easyPace.replace(':', '.')) + 0.5} to ${parseFloat(parameters.easyPace.replace(':', '.')) + 1.0} min/km (e.g., if easy is 7:45, suggest 8:15-8:45).
-            - Tempo Pace should be comfortably hard, faster than easy but slower than interval (e.g., ${parseFloat(parameters.easyPace.replace(':', '.')) - 0.5} to ${parseFloat(parameters.easyPace.replace(':', '.')) - 0.25} min/km).
-            - Interval Pace should be significantly faster and challenging (e.g., ${parseFloat(parameters.easyPace.replace(':', '.')) - 1.0} to ${parseFloat(parameters.easyPace.replace(':', '.')) - 1.5} min/km).
-            - The plan should include a half marathon race (21.1km) in Week 7 or 8.
-            - Format the plan as a clear markdown table, with daily activities and weekly totals. Include important notes on warm-up, cool-down, listening to body, and pace guidelines.
+            User's Details:
+            - Running Goal: ${parameters.goal}
+            - Current Weekly Mileage: ${parameters.currentMileage} km
+            - Running Days: ${parameters.runningDays}
+            - Peak Weekly Mileage during plan: ${parameters.peakMileage || 'not specified'} km (if not specified, aim for a sensible progression to achieve the goal)
+            - Desired Workout Types: ${parameters.workoutTypes || 'interval training, easy runs, long runs, tempo runs'}
+            - User's Reported Easy Pace: ${parameters.easyPace} min/km
+            - User's Target Race Pace for 32k: ${parameters.targetPace} min/km
+
+            **Important Pace Guidelines to Incorporate:**
+            - Easy/Long Run Pace should be truly conversational and slower than the reported easy pace. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) + 0.5).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) + 1.0).toFixed(2).replace('.',':')} min/km** (e.g., if user easy is 7:45, suggest 8:15-8:45). This is for recovery and building aerobic base.
+            - Tempo Pace should be comfortably hard, faster than easy but slower than interval. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) - 0.5).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) - 0.25).toFixed(2).replace('.',':')} min/km**.
+            - Interval Pace should be significantly faster and challenging, requiring strong effort. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.0).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.5).toFixed(2).replace('.',':')} min/km**.
+
+            **Output Format:**
+            Provide the plan using markdown. Start with a main heading for the plan. Follow with key parameters, pace guidelines, and general important notes (warm-up, cool-down, rest, hydration, listening to body). The main training schedule MUST be a clear markdown table with columns for **Week, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, Total Weekly Mileage (km), and Notes.** Use 'Rest' for rest days. Ensure the table is correctly formatted with headers and separators.
+            Conclude with a motivational closing statement.
             `;
 
-            console.log("Sending prompt to Gemini:", prompt);
+            console.log("Sending prompt to Gemini...");
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            const text = response.text();
+            const rawGeminiOutput = response.text(); // This is the markdown text from Gemini
 
-            trainingPlanDiv.textContent = text;
+            console.log("Raw Gemini Output:", rawGeminiOutput); // Log raw output for debugging
+
+            // Format the markdown output into HTML
+            const formattedPlanHtml = formatGeminiOutputToHtml(rawGeminiOutput);
+
+            trainingPlanDiv.innerHTML = formattedPlanHtml; // Render HTML content
             planOutput.classList.remove('hidden');
 
         } catch (error) {
             console.error("Error calling Gemini API:", error);
-            errorMessageDiv.textContent = `Error generating plan: ${error.message}. Please check your API key and try again. (Check console for details)`;
+            let errorMessage = `Error generating plan: ${error.message}.`;
+            if (error.message.includes('API key')) {
+                errorMessage += " Please check your API key and ensure it's correct and valid.";
+            } else if (error.message.includes('blocked by CORS')) {
+                 errorMessage += " This is likely a CORS issue. For production, you MUST use a backend server to call the API securely.";
+            } else if (error.message.includes('Quota exceeded')) {
+                 errorMessage += " You might have exceeded your API quota. Please check your Google Cloud Console.";
+            }
+            errorMessageDiv.textContent = errorMessage;
             errorDiv.classList.remove('hidden');
         } finally {
             loadingDiv.classList.add('hidden');
         }
     });
+
+    /**
+     * Helper function to convert a markdown table string into an HTML <table>.
+     * Assumes a standard markdown table format.
+     */
+    function markdownTableToHtml(markdownTable) {
+        const lines = markdownTable.split('\n').filter(line => line.trim().startsWith('|'));
+        if (lines.length < 2) return ''; // Not enough lines for a table, return empty string or original markdown
+
+        const headerLine = lines[0];
+        const headerCells = headerLine.split('|').map(h => h.trim()).filter(h => h);
+
+        let html = '<table class="training-plan-table">\n<thead><tr>'; // Add a class for styling
+        headerCells.forEach(cell => {
+            html += `<th>${cell}</th>`;
+        });
+        html += '</tr></thead>\n<tbody>';
+
+        // Start from index 2, skipping header and separator line
+        for (let i = 2; i < lines.length; i++) {
+            const rowCells = lines[i].split('|').map(c => c.trim()).filter(c => c);
+            html += '<tr>';
+            rowCells.forEach(cell => {
+                html += `<td>${cell}</td>`;
+            });
+            html += '</tr>\n';
+        }
+        html += '</tbody></table>\n';
+        return html;
+    }
+
+
+    /**
+     * Converts markdown output from Gemini into formatted HTML.
+     * This function is designed to handle the typical markdown output from Gemini,
+     * including headings, bold text, lists, and a central table.
+     */
+    function formatGeminiOutputToHtml(markdownText) {
+        let htmlContent = markdownText;
+
+        // 1. Extract and convert the table first
+        const tableRegex = /(\|.*?\|\n\|---.*?---\|\n(?:\|.*?\|\n)+)/s; // Regex to capture a full markdown table block
+        const tableMatch = htmlContent.match(tableRegex);
+        let htmlTable = '';
+        if (tableMatch) {
+            const markdownTable = tableMatch[0];
+            htmlTable = markdownTableToHtml(markdownTable);
+            // Replace the markdown table with a unique placeholder
+            htmlContent = htmlContent.replace(markdownTable, '\n\n');
+        }
+
+        // 2. Convert other common markdown elements to HTML
+        htmlContent = htmlContent
+            .replace(/^## (.*$)/gm, '<h2>$1</h2>') // H2 headings
+            .replace(/^### (.*$)/gm, '<h3>$1</h3>') // H3 headings
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
+            .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic text
+
+        // 3. Convert list items. This is a bit more involved to ensure proper <ul><li> structure.
+        // Identify blocks of markdown list items and wrap them in <ul>.
+        const listBlockRegex = /(\n\* [^\n]+(?:(?:\n\* [^\n]+)*))/g;
+        htmlContent = htmlContent.replace(listBlockRegex, (match) => {
+            const listItems = match.split('\n').filter(line => line.trim().startsWith('*')).map(line => `<li>${line.substring(2).trim()}</li>`).join('\n');
+            return `<ul>\n${listItems}\n</ul>\n`;
+        });
+
+        // 4. Convert remaining lines into paragraphs (excluding empty lines or already processed tags)
+        htmlContent = htmlContent
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0 && !line.startsWith('<h') && !line.startsWith('<ul') && !line.startsWith('<table') && !line.startsWith('', htmlTable);
+        }
+        
+        // Final cleanup for potential extra newlines around generated tags
+        htmlContent = htmlContent.replace(/<\/p>\n<p>/g, '\n'); // Remove p tags around content that should be continuous
+        htmlContent = htmlContent.replace(/<\/ul>\n<ul>/g, '\n'); // Merge consecutive lists if accidentally split
+        htmlContent = htmlContent.replace(/<p>\s*<\/p>/g, ''); // Remove empty paragraphs
+
+        return htmlContent;
+    }
 });
