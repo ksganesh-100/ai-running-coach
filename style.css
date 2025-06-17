@@ -1,0 +1,100 @@
+body {
+font-family: sans-serif;
+margin: 20px;
+background-color: #f4f4f4;
+display: flex;
+justify-content: center;
+align-items: flex-start;
+min-height: 100vh;
+}
+
+.container {
+background-color: #fff;
+padding: 30px;
+border-radius: 8px;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+width: 80%;
+max-width: 600px;
+}
+
+h1, h2 {
+text-align: center;
+color: #333;
+margin-bottom: 20px;
+}
+
+form > div {
+margin-bottom: 15px;
+}
+
+label {
+display: block;
+margin-bottom: 5px;
+font-weight: bold;
+color: #555;
+}
+
+input {
+width: 100%;
+padding: 10px;
+border: 1px solid #ccc;
+border-radius: 4px;
+box-sizing: border-box;
+font-size: 16px;
+}
+
+button {
+background-color: #007bff;
+color: white;
+padding: 12px 20px;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+font-size: 18px;
+transition: background-color 0.3s ease;
+width: 100%;
+}
+
+button:hover {
+background-color: #0056b3;
+}
+
+#planOutput {
+margin-top: 30px;
+border: 1px solid #ddd;
+padding: 20px;
+border-radius: 4px;
+background-color: #f9f9f9;
+}
+
+#trainingPlan {
+white-space: pre-wrap; /* Preserve formatting */
+font-family: monospace;
+font-size: 14px;
+color: #333;
+line-height: 1.4;
+}
+
+.hidden {
+display: none;
+}
+
+#loading p {
+text-align: center;
+margin-top: 20px;
+font-style: italic;
+color: #777;
+}
+
+#error {
+margin-top: 20px;
+background-color: #ffe0e0;
+color: #cc0000;
+padding: 15px;
+border-radius: 4px;
+border: 1px solid #ffaaaa;
+}
+
+.error-message {
+margin-bottom: 0;
+}
