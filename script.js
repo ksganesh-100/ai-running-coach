@@ -63,10 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Construct the prompt using the gathered parameters and context
             const prompt = `
-            You are an Jack Daniels, expert running coach. Create a 12-week running plan.
+            You are an Jack Daniels, expert running coach. Create a running plan that ends with Goal race submitted by user.
             Today's Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-            Current City: Chennai, Tamil Nadu, India (consider potential heat/humidity)
-
+            
             User's Details:
             - Running Goal: ${parameters.goal}
             - Current Weekly Mileage: ${parameters.currentMileage} km
@@ -74,10 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
             - Peak Weekly Mileage during plan: ${parameters.peakMileage || 'not specified'} km (if not specified, aim for a sensible progression to achieve the goal)
             - Desired Workout Types: ${parameters.workoutTypes || 'interval training, easy runs, long runs, tempo runs'}
             - User's Reported Easy Pace: ${parameters.easyPace} min/km
-            - User's Target Race Pace for 32k: ${parameters.targetPace} min/km
+            - User's Target Race Pace: ${parameters.targetPace} min/km
 
             **Important Pace Guidelines to Incorporate:**
-            - Easy/Long Run Pace should be truly conversational and slower than the reported easy pace. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) + 0.5).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) + 1.0).toFixed(2).replace('.',':')} min/km** (e.g., if user easy is 7:45, suggest 8:15-8:45). This is for recovery and building aerobic base.
+            - Easy/Long Run Pace should slightly slower than the reported easy pace. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) + 0.5).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) + 1.0).toFixed(2).replace('.',':')} min/km** (e.g., if user easy is 7:45, suggest 8:00-8:15). 
             - Tempo Pace should be comfortably hard, faster than easy but slower than interval. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) - 0.5).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) - 0.25).toFixed(2).replace('.',':')} min/km**.
             - Interval Pace should be significantly faster and challenging, requiring strong effort. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.0).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.5).toFixed(2).replace('.',':')} min/km**.
 
