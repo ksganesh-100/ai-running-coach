@@ -9,7 +9,7 @@ import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
 // === REPLACE THIS WITH YOUR ACTUAL GEMINI API KEY ===
 // This is the insecure part. For production, manage this key on a backend.
-const API_KEY = "AIzaSyBUHFr6rqFvPN6oqN25a_vfIXuORlDqnME"; 
+const API_KEY = "AIzaSyBUHFr6rqFvPN6oqN25a_vfIXuORlDqnME";
 // ====================================================
 
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -162,8 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tableMatch) {
             const markdownTable = tableMatch[0];
             htmlTable = markdownTableToHtml(markdownTable);
-            // Replace the markdown table with a unique placeholder
-            htmlContent = htmlContent.replace(markdownTable, '\n\n');
+            // Replace the markdown table with a unique placeholder. Using a placeholder for robustness.
+            htmlContent = htmlContent.replace(markdownTable, '');
         }
 
         // 2. Convert other common markdown elements to HTML
@@ -173,25 +173,37 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
             .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic text
 
-        // 3. Convert list items. This is a bit more involved to ensure proper <ul><li> structure.
-        // Identify blocks of markdown list items and wrap them in <ul>.
+        // 3. Convert list items. This handles blocks of list items.
         const listBlockRegex = /(\n\* [^\n]+(?:(?:\n\* [^\n]+)*))/g;
         htmlContent = htmlContent.replace(listBlockRegex, (match) => {
             const listItems = match.split('\n').filter(line => line.trim().startsWith('*')).map(line => `<li>${line.substring(2).trim()}</li>`).join('\n');
             return `<ul>\n${listItems}\n</ul>\n`;
         });
 
-        // 4. Convert remaining lines into paragraphs (excluding empty lines or already processed tags)
+        // 4. Convert remaining significant lines into paragraphs
+        // This regex attempts to find lines that are not already HTML tags or just whitespace
         htmlContent = htmlContent
             .split('\n')
             .map(line => line.trim())
-            .filter(line => line.length > 0 && !line.startsWith('<h') && !line.startsWith('<ul') && !line.startsWith('<table') && !line.startsWith('', htmlTable);
+            .filter(line => {
+                // Keep lines that are not empty AND not part of a processed tag (headings, lists, table placeholder)
+                return line.length > 0 &&
+                       !line.startsWith('<h') &&
+                       !line.startsWith('<ul') &&
+                       !line.startsWith(''); // Check for the table placeholder
+            })
+            .map(line => `<p>${line}</p>`)
+            .join('\n');
+
+
+        // 5. Insert the HTML table back into its placeholder
+        if (tableMatch) {
+            htmlContent = htmlContent.replace('', htmlTable);
         }
         
-        // Final cleanup for potential extra newlines around generated tags
-        htmlContent = htmlContent.replace(/<\/p>\n<p>/g, '\n'); // Remove p tags around content that should be continuous
-        htmlContent = htmlContent.replace(/<\/ul>\n<ul>/g, '\n'); // Merge consecutive lists if accidentally split
-        htmlContent = htmlContent.replace(/<p>\s*<\/p>/g, ''); // Remove empty paragraphs
+        // Final cleanup for potential extra newlines or empty paragraphs that might result from splitting/joining
+        htmlContent = htmlContent.replace(/<\/p>\n<p>/g, '\n'); // Remove extra p tags around content
+        htmlContent = htmlContent.replace(/<p>\s*<\/p>/g, ''); // Remove truly empty paragraphs
 
         return htmlContent;
     }
