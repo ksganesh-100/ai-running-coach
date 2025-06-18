@@ -149,3 +149,18 @@ margin-bottom: 0;
 #trainingPlan p {
     margin-bottom: 1em;
 }
+
+/* Make the container for the training plan scrollable */
+#planOutput {
+    overflow-x: auto; /* Allows horizontal scrolling if content overflows */
+    -webkit-overflow-scrolling: touch; /* Improves scrolling on touch devices */
+    /* You might want to add some padding around the content within the scrollable area */
+    padding: 0 10px; /* Adjust as needed */
+}
+
+/* Optional: Ensure the table itself doesn't try to shrink too much if scroll is enabled */
+.training-plan-table {
+    min-width: 700px; /* Adjust this value if the table is still too narrow and wraps too aggressively.
+                         Set it to a width that ensures content looks good without overflowing excessively on typical desktop.
+                         It will then scroll on smaller screens. */
+}

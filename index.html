@@ -11,7 +11,7 @@
         <h1>Running Plan Generator</h1>
         <form id="planForm">
             <div>
-                <label for="goal">Running Goal (e.g., 32k in 3 months):</label>
+                <label for="goal">Running Goal (e.g., I want to run a hal marathon on 4-Oct-2-25):</label>
                 <input type="text" id="goal" name="goal" required>
             </div>
             <div>
@@ -23,20 +23,12 @@
                 <input type="text" id="runningDays" name="runningDays" required>
             </div>
             <div>
-                <label for="peakMileage">Peak Weekly Mileage (km):</label>
+                <label for="peakMileage">Desired Peak Weekly Mileage (km) - Leave blank if unsure:</label>
                 <input type="number" id="peakMileage" name="peakMileage">
             </div>
             <div>
-                <label for="workoutTypes">Workout Types (comma-separated):</label>
-                <input type="text" id="workoutTypes" name="workoutTypes">
-            </div>
-            <div>
-                <label for="easyPace">Easy Pace (min/km, e.g., 7:45):</label>
+                <label for="easyPace">Current Easy Pace (min/km, e.g., 7:30):</label>
                 <input type="text" id="easyPace" name="easyPace">
-            </div>
-            <div>
-                <label for="targetPace">Target Race Pace (min/km, e.g., 8:00):</label>
-                <input type="text" id="targetPace" name="targetPace">
             </div>
             <button type="submit">Generate Plan</button>
         </form>

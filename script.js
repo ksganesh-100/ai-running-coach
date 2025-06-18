@@ -1,8 +1,3 @@
-// **CRITICAL SECURITY WARNING:**
-// DO NOT DEPLOY THIS CODE TO A PUBLIC WEBSITE WITH THE API KEY EXPOSED.
-// THIS IS FOR LOCAL, EXPERIMENTAL TESTING ONLY.
-// FOR SECURE DEPLOYMENT, YOU MUST USE A BACKEND SERVER TO CALL THE GEMINI API.
-
 // Import the GoogleGenerativeAI library from a CDN
 // This requires your <script> tag in index.html to be type="module"
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
@@ -30,9 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentMileage = document.getElementById('currentMileage').value;
         const runningDays = document.getElementById('runningDays').value;
         const peakMileage = document.getElementById('peakMileage').value;
-        const workoutTypes = document.getElementById('workoutTypes').value;
         const easyPace = document.getElementById('easyPace').value;
-        const targetPace = document.getElementById('targetPace').value;
 
         // Create an object to hold all parameters for the prompt
         const parameters = {
@@ -40,14 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentMileage: parseFloat(currentMileage),
             runningDays,
             peakMileage: parseFloat(peakMileage),
-            workoutTypes,
             easyPace,
-            targetPace
         };
 
         // Basic validation
-        if (!goal || isNaN(parameters.currentMileage) || !runningDays || !easyPace || !targetPace) {
-            errorMessageDiv.textContent = "Please fill in all required fields (Goal, Current Weekly Mileage, Running Days, Easy Pace, Target Pace).";
+        if (!goal || isNaN(parameters.currentMileage) || !runningDays || !easyPace ) {
+            errorMessageDiv.textContent = "Please fill in all required fields (Goal, Current Weekly Mileage, Running Days, Easy Pace).";
             errorDiv.classList.remove('hidden');
             return;
         }
@@ -71,14 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
             - Current Weekly Mileage: ${parameters.currentMileage} km
             - Running Days: ${parameters.runningDays}
             - Peak Weekly Mileage during plan: ${parameters.peakMileage || 'not specified'} km (if not specified, aim for a sensible progression to achieve the goal)
-            - Desired Workout Types: ${parameters.workoutTypes || 'interval training, easy runs, long runs, tempo runs'}
             - User's Reported Easy Pace: ${parameters.easyPace} min/km
-            - User's Target Race Pace: ${parameters.targetPace} min/km
 
-            **Important Pace Guidelines to Incorporate:**
-            - Easy/Long Run Pace should slightly slower than the reported easy pace. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) + 0.5).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) + 1.0).toFixed(2).replace('.',':')} min/km** (e.g., if user easy is 7:45, suggest 8:00-8:15). 
+            **Important Instructions to follow for the training plan**
+            - Include the following workout types - easy runs, 
+            - Easy/Long Run Pace should at the reported easy pace. 
             - Tempo Pace should be comfortably hard, faster than easy but slower than interval. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) - 0.5).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) - 0.25).toFixed(2).replace('.',':')} min/km**.
-            - Interval Pace should be significantly faster and challenging, requiring strong effort. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.0).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.5).toFixed(2).replace('.',':')} min/km**.
+            - Interval Pace should be significantly faster and challenging, requiring strong effort. Suggest a range of **${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.0).toFixed(2).replace('.',':')} to ${(parseFloat(parameters.easyPace.replace(':', '.')) - 1.5).toFixed(2).replace('.',':')} min/km**. Ensure that the interval workout includes warmup and cooldown and that the total of warm up cool down and interval sets matches the total for the day.
 
             **Output Format:**
             Provide the plan using markdown. Start with a main heading for the plan. Follow with key parameters, pace guidelines, and general important notes (warm-up, cool-down, rest, hydration, listening to body). The main training schedule MUST be a clear markdown table with columns for **Week, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, Total Weekly Mileage (km), and Notes.** Use 'Rest' for rest days. Ensure the table is correctly formatted with headers and separators.
